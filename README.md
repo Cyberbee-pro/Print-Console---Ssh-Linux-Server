@@ -1,4 +1,4 @@
-# CybeesHOMELABV1 Print Console Extension
+# Print Console Extension
 
 A modular, full-stack monorepo interface designed to extend an automated operating system printing and storage pipeline. This system acts as an isolated network ingress layer that routes document file uploads directly into a secured local filesystem drop zone, allowing underlying systemd daemons and printing spoolers to process execution commands asynchronously.
 

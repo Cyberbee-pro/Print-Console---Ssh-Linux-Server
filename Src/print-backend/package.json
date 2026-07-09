@@ -1,7 +1,9 @@
 {
   "name": "print-backend",
-  "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
   "private": true,
   "devDependencies": {
     "@types/bun": "latest"

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { readdir, unlink } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";

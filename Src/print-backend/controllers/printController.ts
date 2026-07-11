@@ -1,15 +1,14 @@
 import type { Request, Response } from "express";
 import { readdir, unlink } from "node:fs/promises";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import { Client } from "ssh2";
 
-const useStorage = (process.env.useStorage === "true");
+const useStorage = process.env.useStorage === "true";
 const STORAGE_POOL = process.env.STORAGE_POOL || "/srv/PrintConsoleStorage";
 const DROP_ZONE = process.env.DROP_ZONE_PATH || "/srv/PrintConsoleStorage/printConsole";
 
-// SSH Configuration parameters
 const sshConfig = {
     host: process.env.serverIp || "127.0.0.1",
     port: Number(process.env.serverPort) || 22,
@@ -17,7 +16,6 @@ const sshConfig = {
     privateKey: process.env.sshKey || ""
 };
 
-// Helper utility to execute commands remotely over an established SSH connection
 const executeRemoteCommand = (conn: Client, cmd: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         conn.exec(cmd, (err, stream) => {
@@ -25,7 +23,6 @@ const executeRemoteCommand = (conn: Client, cmd: string): Promise<string> => {
             let data = "";
             let stderr = "";
 
-            // Explicitly type the stream buffer chunks
             stream.on("data", (chunk: Buffer) => {
                 data += chunk.toString();
             });
@@ -34,7 +31,6 @@ const executeRemoteCommand = (conn: Client, cmd: string): Promise<string> => {
                 stderr += chunk.toString();
             });
 
-            // Explicitly type the process exit status code
             stream.on("close", (code: number) => {
                 if (code !== 0) {
                     return reject(new Error(stderr || `Exit code ${code}`));
@@ -45,11 +41,41 @@ const executeRemoteCommand = (conn: Client, cmd: string): Promise<string> => {
     });
 };
 
+const buildLpArguments = (body: any): string[] => {
+    const options: string[] = [];
+
+    switch (body.printMode) {
+        case "draft":
+            options.push("-o", "print-quality=3", "-o", "resolution=300dpi");
+            break;
+        case "high":
+            options.push("-o", "print-quality=5", "-o", "resolution=1200dpi");
+            break;
+        case "standard":
+        default:
+            options.push("-o", "print-quality=4", "-o", "resolution=600dpi");
+            break;
+    }
+
+    if (body.colorMode === "mono") {
+        options.push("-o", "color-model=gray");
+    } else {
+        options.push("-o", "color-model=color");
+    }
+
+    if (body.duplexMode === "duplex") {
+        options.push("-o", "sides=two-sided-long-edge");
+    } else {
+        options.push("-o", "sides=one-sided");
+    }
+
+    return options;
+};
+
 export const getStatus = async (req: Request, res: Response): Promise<void> => {
     const subDirs = ["received", "queue", "printed"];
 
     if (useStorage) {
-        // Mode A: Scan local machine directories
         try {
             const scanPromises = subDirs.map(async (dir) => {
                 const targetPath = path.join(STORAGE_POOL, dir);
@@ -64,17 +90,15 @@ export const getStatus = async (req: Request, res: Response): Promise<void> => {
             const pipelineState = results.reduce((acc, current) => {
                 acc[current.dir] = { count: current.files.length, files: current.files };
                 return acc;
-            }, {} as any);
+            }, {} as Record<string, { count: number; files: string[] }>);
 
             res.status(200).json({ status: "success", data: pipelineState });
         } catch (error) {
             res.status(500).json({ status: "error", message: "Failed to scan local storage." });
         }
     } else {
-        // Mode B: Tunnel into home server to check status remotely
         const conn = new Client();
         conn.on("ready", () => {
-            // Execute an optimized remote shell command to read all directories concurrently
             const remoteCmd = `ls -m ${STORAGE_POOL}/received; echo "---"; ls -m ${STORAGE_POOL}/queue; echo "---"; ls -m ${STORAGE_POOL}/printed`;
 
             executeRemoteCommand(conn, remoteCmd)
@@ -113,11 +137,24 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
 
         const cleanExt = path.extname(file.originalname);
         const uniqueName = useStorage ? file.filename : `${Date.now()}-${crypto.randomUUID()}${cleanExt}`;
+        const dynamicArgs = buildLpArguments(req.body);
 
         if (useStorage) {
-            // Mode A: Standard local spooler execution
             const dropZoneFilePath = file.path;
-            const printProcess = spawn("lp", ["-d", "Your_Printer_Name", "-o", "print-quality=5", dropZoneFilePath]);
+            const printerName = process.env.PrinterName;
+
+            // 1. Fail-Fast Guard Clause: Halt execution if the environment variable is missing
+            if (!printerName) {
+                console.error("[CRITICAL SYSTEM ERROR]: process.env.PrinterName is uninitialized.");
+                return res.status(500).json({
+                    status: "error",
+                    message: "Server configuration failure: Targeted system printer identifier is missing."
+                });
+            }
+
+            const fullLpArgs: string[] = ["-d", printerName, ...dynamicArgs, dropZoneFilePath];
+
+            const printProcess: ChildProcess = spawn("lp", fullLpArgs);
 
             printProcess.on("close", async (exitCode) => {
                 if (exitCode !== 0) {
@@ -133,7 +170,6 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
                 }
             });
         } else {
-            // Mode B: Serverless Outbound Tunnel Execution Loop
             const conn = new Client();
             conn.on("ready", () => {
                 conn.sftp((err, sftp) => {
@@ -144,28 +180,26 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
 
                     const remoteDropPath = path.posix.join(DROP_ZONE, uniqueName);
 
-                    // Stream the file directly out of memory buffer straight into the remote SSH socket channel
                     sftp.writeFile(remoteDropPath, file.buffer, (writeErr) => {
                         if (writeErr) {
                             res.status(500).json({ status: "error", message: `Remote disk write failed: ${writeErr.message}` });
                             return conn.end();
                         }
 
-                        // Trigger the print execution command on the target home machine remotely
-                        const remotePrintCmd = `lp -d Your_Printer_Name -o print-quality=5 ${remoteDropPath}`;
+                        const remoteOptionsString = dynamicArgs.join(" ");
+                        const remotePrintCmd = `lp -d Your_Printer_Name ${remoteOptionsString} ${remoteDropPath}`;
+
                         executeRemoteCommand(conn, remotePrintCmd)
                             .then(() => {
-                                // Atomic migration on the remote host filesystem post-print execution
                                 const remoteArchivePath = path.posix.join(STORAGE_POOL, "received", uniqueName);
                                 const moveCmd = `mv ${remoteDropPath} ${remoteArchivePath}`;
                                 return executeRemoteCommand(conn, moveCmd);
                             })
                             .then(() => {
-                                res.status(200).json({ status: "success", message: "Streamed via SSH tunnel cleanly.", filename: uniqueName });
+                                res.status(200).json({ status: "success", filename: uniqueName });
                                 conn.end();
                             })
                             .catch((execErr) => {
-                                // Remote cleanup execution sequence if printing fails
                                 executeRemoteCommand(conn, `rm ${remoteDropPath}`).finally(() => {
                                     res.status(500).json({ status: "error", message: `Remote pipeline runtime error: ${execErr.message}` });
                                     conn.end();

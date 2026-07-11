@@ -7,7 +7,6 @@ const DROP_ZONE = process.env.DROP_ZONE_PATH || "/srv/PrintConsoleStorage/printC
 let storageConfig;
 
 if (useStorage) {
-  // Mode A: Persistent local server storage
   storageConfig = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, DROP_ZONE);
@@ -19,7 +18,6 @@ if (useStorage) {
     },
   });
 } else {
-  // Mode B: Serverless stateless runtime memory allocation
   storageConfig = multer.memoryStorage();
 }
 

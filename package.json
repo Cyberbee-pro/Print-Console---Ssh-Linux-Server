@@ -1,8 +1,13 @@
 {
   "name": "printserverconsole",
-  "module": "index.ts",
   "type": "module",
   "private": true,
+  "workspaces": [
+    "Src/*"
+  ],
+  "scripts": {
+    "dev": "cd Src/print-backend && bun --hot index.ts & cd Src/print-console-front && bun run dev"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

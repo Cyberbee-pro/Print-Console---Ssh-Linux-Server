@@ -44,6 +44,7 @@ const executeRemoteCommand = (conn: Client, cmd: string): Promise<string> => {
 const buildLpArguments = (body: any): string[] => {
     const options: string[] = [];
 
+    // 1. Resolution Density Mapping
     switch (body.printMode) {
         case "draft":
             options.push("-o", "print-quality=3", "-o", "resolution=300dpi");
@@ -57,16 +58,24 @@ const buildLpArguments = (body: any): string[] => {
             break;
     }
 
+    // 2. Chromatic Scale Mapping
     if (body.colorMode === "mono") {
         options.push("-o", "color-model=gray");
     } else {
         options.push("-o", "color-model=color");
     }
 
+    // 3. Duplex Binding Layout Mapping
     if (body.duplexMode === "duplex") {
         options.push("-o", "sides=two-sided-long-edge");
     } else {
         options.push("-o", "sides=one-sided");
+    }
+
+    // 4. CUPS Ingress Page-Range Mapping
+    if (body.pageMode === "custom" && body.customPages) {
+        // Formats clean flag string matching CUPS standard: -o page-ranges=1-4,7
+        options.push("-o", `page-ranges=${body.customPages.trim()}`);
     }
 
     return options;
@@ -135,6 +144,21 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
             return res.status(400).json({ status: "error", message: "No file payload parsed." });
         }
 
+        // Catch incoming custom parameter scopes
+        const { pageMode, customPages } = req.body;
+
+        // 1. Fail-Fast Guard Clause: Block transactions if range options are structurally broken
+        if (pageMode === "custom" && (!customPages || customPages.trim() === "")) {
+            // Unlink dynamic temp buffers instantly out of disk scope if using local storage pool
+            if (useStorage && file.path && fs.existsSync(file.path)) {
+                await unlink(file.path);
+            }
+            return res.status(400).json({ 
+                status: "error", 
+                message: "Validation Failure: Selected custom range requires valid page definitions." 
+            });
+        }
+
         const cleanExt = path.extname(file.originalname);
         const uniqueName = useStorage ? file.filename : `${Date.now()}-${crypto.randomUUID()}${cleanExt}`;
         const dynamicArgs = buildLpArguments(req.body);
@@ -142,9 +166,9 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
         if (useStorage) {
             const dropZoneFilePath = file.path;
             const printerName = process.env.PrinterName;
+            const isMock = process.env.MOCK_PRINT === "true";
 
-            // 1. Fail-Fast Guard Clause: Halt execution if the environment variable is missing
-            if (!printerName) {
+            if (!isMock && !printerName) {
                 console.error("[CRITICAL SYSTEM ERROR]: process.env.PrinterName is uninitialized.");
                 return res.status(500).json({
                     status: "error",
@@ -152,13 +176,18 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
                 });
             }
 
-            const fullLpArgs: string[] = ["-d", printerName, ...dynamicArgs, dropZoneFilePath];
+            const executionBinary = isMock ? "echo" : "lp";
+            const fullLpArgs: string[] = isMock
+                ? [`[MOCK SPOOLER] Simulating print execution for document: ${uniqueName} with arguments: ${dynamicArgs.join(" ")}`]
+                : ["-d", printerName as string, ...dynamicArgs, dropZoneFilePath];
 
-            const printProcess: ChildProcess = spawn("lp", fullLpArgs);
+            const printProcess: ChildProcess = spawn(executionBinary, fullLpArgs);
 
             printProcess.on("close", async (exitCode) => {
                 if (exitCode !== 0) {
-                    await unlink(dropZoneFilePath);
+                    if (fs.existsSync(dropZoneFilePath)) {
+                        await unlink(dropZoneFilePath);
+                    }
                     return res.status(500).json({ status: "error", message: "Local spooler failure." });
                 }
                 try {
@@ -187,7 +216,9 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
                         }
 
                         const remoteOptionsString = dynamicArgs.join(" ");
-                        const remotePrintCmd = `lp -d Your_Printer_Name ${remoteOptionsString} ${remoteDropPath}`;
+                        // Pull the targeted remote printer configuration variable or fall back to system defaults
+                        const targetedPrinter = process.env.PrinterName || "Your_Printer_Name";
+                        const remotePrintCmd = `lp -d ${targetedPrinter} ${remoteOptionsString} ${remoteDropPath}`;
 
                         executeRemoteCommand(conn, remotePrintCmd)
                             .then(() => {
@@ -212,6 +243,7 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
             }).connect(sshConfig);
         }
     } catch (error) {
+        console.error("Fatal backend processing error: ", error);
         res.status(500).json({ status: "error", message: "Fatal backend integration fault." });
     }
 };

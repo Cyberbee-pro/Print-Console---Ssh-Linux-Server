@@ -34,8 +34,9 @@ export const sendPrintJobToServer = async (
   formData.append("pageMode", settings.pageMode);
   formData.append("customPages", settings.customPages);
 
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
   // Fire async payload over the local network loop
-  const response = await fetch("http://localhost:3001/api/print", {
+  const response = await fetch(`${backendUrl}/print`, {
     method: "POST",
     body: formData, // Fetch naturally injects the boundary multipart headers automatically
   });

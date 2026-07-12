@@ -192,10 +192,9 @@ const handleOptionSelect = <K extends keyof PrintOptions>(
               {uploadedFiles.map((file) => (
                 <FileUpload.ListItemProgressBar
                   key={file.id}
-                  id={file.id}
                   name={file.name}
                   size={file.size}
-                  type={file.type}
+                  type={file.name.endsWith('.pdf') ? 'pdf' : file.type.startsWith('image/') ? 'image' : 'empty'}
                   progress={file.progress}
                   failed={file.failed}
                   onDelete={() => handleDeleteFile(file.id)}

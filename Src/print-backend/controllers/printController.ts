@@ -181,6 +181,13 @@ export const handlePrint = async (req: Request, res: Response): Promise<any> => 
                 ? [`[MOCK SPOOLER] Simulating print execution for document: ${uniqueName} with arguments: ${dynamicArgs.join(" ")}`]
                 : ["-d", printerName as string, ...dynamicArgs, dropZoneFilePath];
 
+            // Console log the commands for testing purposes
+            console.log(`[MOCK SPOOLER] Executing command: ${executionBinary} "${fullLpArgs.join(" ")}"`);
+            if (isMock) {
+                const hypotheticalLpArgs = ["-d", printerName as string, ...dynamicArgs, dropZoneFilePath];
+                console.log(`[MOCK SPOOLER] Hypothetical production command: lp ${hypotheticalLpArgs.join(" ")}`);
+            }
+
             const printProcess: ChildProcess = spawn(executionBinary, fullLpArgs);
 
             printProcess.on("close", async (exitCode) => {

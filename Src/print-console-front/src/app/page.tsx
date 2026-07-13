@@ -7,6 +7,7 @@ import { FileUpload } from "@/components/application/file-upload/file-upload-bas
 import { useState, useRef, useEffect } from 'react';
 import { RippleButton } from '@/components/ui/ripple-button';
 import { Dropdown } from "@/components/base/dropdown/dropdown";
+import { ChevronDown } from "@untitledui/icons";
 import { sendPrintJobToServer, fetchPipelineStatus, type PipelineState, getBackendUrl } from '@/utils/api';
 import { Button as AriaButton } from 'react-aria-components';
 
@@ -320,9 +321,12 @@ const Content = () => {
               </label>
               <Dropdown.Root>
                 <AriaButton className={`w-full bg-zinc-900 border border-zinc-700 rounded p-2.5 text-sm text-white flex justify-between items-center text-left focus:outline-none focus:border-emerald-500 standard-select-ui ${exo2.className}`}>
-                  {printSettings.printMode === "draft" && "Draft Density (300dpi / Fast)"}
-                  {printSettings.printMode === "standard" && "Standard Execution Layer (600dpi)"}
-                  {printSettings.printMode === "high" && "High Fidelity Matrix (1200dpi)"}
+                  <span>
+                    {printSettings.printMode === "draft" && "Draft Density (300dpi / Fast)"}
+                    {printSettings.printMode === "standard" && "Standard Execution Layer (600dpi)"}
+                    {printSettings.printMode === "high" && "High Fidelity Matrix (1200dpi)"}
+                  </span>
+                  <ChevronDown className="size-4 text-zinc-400 shrink-0 ml-2" />
                 </AriaButton>
                 <Dropdown.Popover className="bg-zinc-900 border border-zinc-800 rounded mt-1 shadow-xl p-1 w-[340px] z-50">
                   <Dropdown.Menu className="outline-none w-full">
@@ -347,8 +351,11 @@ const Content = () => {
               </label>
               <Dropdown.Root>
                 <AriaButton className={`w-full bg-zinc-900 border border-zinc-700 rounded p-2.5 text-sm text-white flex justify-between items-center text-left focus:outline-none focus:border-emerald-500 standard-select-ui ${exo2.className}`}>
-                  {printSettings.colorMode === "color" && "Full Chromatic Scale Color"}
-                  {printSettings.colorMode === "mono" && "Monochrome / Grayscale Array"}
+                  <span>
+                    {printSettings.colorMode === "color" && "Full Chromatic Scale Color"}
+                    {printSettings.colorMode === "mono" && "Monochrome / Grayscale Array"}
+                  </span>
+                  <ChevronDown className="size-4 text-zinc-400 shrink-0 ml-2" />
                 </AriaButton>
                 <Dropdown.Popover className="bg-zinc-900 border border-zinc-800 rounded mt-1 shadow-xl p-1 w-[340px] z-50">
                   <Dropdown.Menu className="outline-none w-full">
@@ -370,9 +377,12 @@ const Content = () => {
               </label>
               <Dropdown.Root>
                 <AriaButton className={`w-full bg-zinc-900 border border-zinc-700 rounded p-2.5 text-sm text-white flex justify-between items-center text-left focus:outline-none focus:border-emerald-500 standard-select-ui ${exo2.className}`}>
-                  {printSettings.duplexMode === "simplex" && "Simplex (Single Sided Layout)"}
-                  {printSettings.duplexMode === "duplex" && "Duplex (Double Sided Long-Edge)"}
-                  {printSettings.duplexMode === "manual" && "Manual Duplex (Two-Step Flip)"}
+                  <span>
+                    {printSettings.duplexMode === "simplex" && "Simplex (Single Sided Layout)"}
+                    {printSettings.duplexMode === "duplex" && "Duplex (Double Sided Long-Edge)"}
+                    {printSettings.duplexMode === "manual" && "Manual Duplex (Two-Step Flip)"}
+                  </span>
+                  <ChevronDown className="size-4 text-zinc-400 shrink-0 ml-2" />
                 </AriaButton>
                 <Dropdown.Popover className="bg-zinc-900 border border-zinc-800 rounded mt-1 shadow-xl p-1 w-[340px] z-50">
                   <Dropdown.Menu className="outline-none w-full">
@@ -397,7 +407,10 @@ const Content = () => {
               </label>
               <Dropdown.Root>
                 <AriaButton className={`w-full bg-zinc-900 border border-zinc-700 rounded p-2.5 text-sm text-white flex justify-between items-center text-left focus:outline-none focus:border-emerald-500 standard-select-ui ${exo2.className}`}>
-                  {printSettings.pageMode === "all" ? "Print Complete Document (All Pages)" : "Custom Selection Range"}
+                  <span>
+                    {printSettings.pageMode === "all" ? "Print Complete Document (All Pages)" : "Custom Selection Range"}
+                  </span>
+                  <ChevronDown className="size-4 text-zinc-400 shrink-0 ml-2" />
                 </AriaButton>
                 <Dropdown.Popover className="bg-zinc-900 border border-zinc-800 rounded mt-1 shadow-xl p-1 w-[340px] z-50">
                   <Dropdown.Menu className="outline-none w-full">

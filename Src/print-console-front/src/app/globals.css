@@ -139,7 +139,7 @@
     @apply font-sans;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Strips browser scrollbar tracks */
+    overflow-y: auto; /* Allow vertical scrolling */
   }
   body {
     @apply bg-background text-foreground;
@@ -147,6 +147,6 @@
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevents text elements from inducing accidental layout shifts */
+    overflow-y: auto; /* Allow vertical scrolling */
   }
 }

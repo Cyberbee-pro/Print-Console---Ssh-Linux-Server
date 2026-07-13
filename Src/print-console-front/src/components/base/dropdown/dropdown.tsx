@@ -20,7 +20,7 @@ import {
     Popover as AriaPopover,
     Separator as AriaSeparator,
 } from "react-aria-components";
-import { cx } from "@/utils/cx";
+import { cx } from "@/lib/utils/cx";
 import { Avatar } from "../avatar/avatar";
 import { CheckboxBase } from "../checkbox/checkbox";
 import { RadioButtonBase } from "../radio-buttons/radio-buttons";
@@ -92,8 +92,8 @@ const DropdownItem = ({ label, children, addon, icon: Icon, avatarUrl, unstyled,
                 <div
                     className={cx(
                         "relative flex items-center rounded-md px-2.5 py-2 outline-focus-ring transition duration-100 ease-linear",
-                        !state.isDisabled && "group-hover:bg-primary_hover",
-                        state.isFocused && "bg-primary_hover",
+                        !state.isDisabled && "group-hover:bg-accent",
+                        state.isFocused && "bg-accent",
                         state.isFocusVisible && "outline-2 -outline-offset-2",
                         state.hasSubmenu && "pr-1.5",
                     )}
@@ -108,7 +108,7 @@ const DropdownItem = ({ label, children, addon, icon: Icon, avatarUrl, unstyled,
 
                     {Icon && <Icon aria-hidden="true" className="mr-2 size-4 shrink-0 stroke-[2.25px] text-fg-quaternary" />}
 
-                    <span className={cx("grow truncate text-sm font-semibold text-secondary", state.isFocused && "text-secondary_hover")}>
+                    <span className={cx("grow truncate text-sm font-semibold text-popover-foreground group-hover:text-accent-foreground", state.isFocused && "text-accent-foreground")}>
                         {label || (typeof children === "function" ? children(state) : children)}
                     </span>
 
@@ -145,7 +145,7 @@ const DropdownPopover = (props: DropdownPopoverProps) => {
             {...props}
             className={(state) =>
                 cx(
-                    "w-62 origin-(--trigger-anchor-point) overflow-auto rounded-lg bg-primary shadow-lg ring-1 ring-secondary_alt will-change-transform",
+                    "w-62 origin-(--trigger-anchor-point) overflow-auto rounded-lg bg-popover border border-border shadow-lg will-change-transform",
                     state.isEntering &&
                         "duration-150 ease-out animate-in fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5",
                     state.isExiting &&

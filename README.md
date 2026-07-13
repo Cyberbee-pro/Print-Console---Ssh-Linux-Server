@@ -70,6 +70,9 @@ useStorage=true
 # Self-Hosted Local Isolation Toggle
 SELF_HOST=true
 MOCK_PRINT=true
+
+# Printer Name Identifier (leave empty to use system default printer)
+PrinterName="EpsonL380"
 ```
 
 Recommended Storage Architecture:

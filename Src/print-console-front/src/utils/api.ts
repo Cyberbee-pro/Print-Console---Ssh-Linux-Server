@@ -1,5 +1,24 @@
 // src/utils/api.ts
 
+export const getBackendUrl = (): string => {
+  // Client-side execution (in browser):
+  // Direct all traffic through the Next.js rewrite proxy (/api) to bypass port 5000 firewall/CORS restrictions.
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/api`;
+  }
+  
+  // Server-side / SSR:
+  let envUrl: string | undefined = undefined;
+  try {
+    envUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  } catch (e) {
+    // process.env might not be defined in some client/static bundles
+  }
+  
+  const finalUrl = envUrl || "http://localhost:5000";
+  return finalUrl.replace(/\/$/, "");
+};
+
 export interface PrintOptions {
   printMode: "draft" | "standard" | "high";
   colorMode: "color" | "mono";
@@ -36,7 +55,7 @@ export const sendPrintJobToServer = async (
   formData.append("pageMode", settings.pageMode);
   formData.append("customPages", settings.customPages);
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const backendUrl = getBackendUrl();
   
   // Route to the root backend endpoint directly to avoid path mismatches
   const response = await fetch(`${backendUrl}/print`, {
@@ -59,7 +78,7 @@ export interface PipelineState {
 }
 
 export const fetchPipelineStatus = async (): Promise<PipelineState> => {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const backendUrl = getBackendUrl();
   const response = await fetch(`${backendUrl}/status`);
   if (!response.ok) {
     throw new Error(`Failed to fetch pipeline status: ${response.statusText}`);

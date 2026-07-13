@@ -1,6 +1,6 @@
 "use client";
 
-import { Orbit, Exo_2 } from 'next/font/google';
+import { Orbit, Exo_2, Pixelify_Sans} from 'next/font/google';
 import DecryptedText from '@/components/DecryptedText';
 import PixelSnow from '@/components/PixelSnow';
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
@@ -36,6 +36,11 @@ const orbit = Orbit({
 });
 
 const exo2 = Exo_2({
+  subsets: ['latin'],
+  weight: '400',
+});
+
+const pixelify = Pixelify_Sans({
   subsets: ['latin'],
   weight: '400',
 });
@@ -256,7 +261,8 @@ const Content = () => {
         </div>
       )}
 
-      <div className={`text-4xl md:text-5xl font-bold text-white mb-4 p-3 tracking-widest ${orbit.className}`}>
+      <div className={`flex text-4xl md:text-5xl font-bold text-white mb-4 p-3 tracking-widest ${orbit.className}`}>
+        <p className={`${pixelify.className} text-lime-400 text-8xl`}>&gt;</p>
         <DecryptedText
           text="Welcome to Print Console"
           speed={70}
@@ -270,7 +276,7 @@ const Content = () => {
       </div>
       
       <p className={`text-xl text-zinc-400 mb-8 tracking-wide text-left ${exo2.className}`}>
-        Manage your print jobs with ease.
+        Manage your ssh print jobs with ease.
       </p>
 
       <form onSubmit={handleFormSubmission} className={`grid grid-cols-1 md:grid-cols-2 gap-8 w-full bg-zinc-950/80 border border-zinc-800 p-8 rounded-xl backdrop-blur-md text-white ${exo2.className}`}>

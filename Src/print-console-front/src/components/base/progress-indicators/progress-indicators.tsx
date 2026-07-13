@@ -44,12 +44,12 @@ export const ProgressBarBase = ({ value, min = 0, max = 100, className, progress
             aria-valuenow={value}
             aria-valuemin={min}
             aria-valuemax={max}
-            className={cx("h-2 w-full overflow-hidden rounded-md bg-quaternary", className)}
+            className={cx("h-2 w-full overflow-hidden rounded-md bg-zinc-800", className)}
         >
             <div
                 // Use transform instead of width to avoid layout thrashing (and for smoother animation)
                 style={{ transform: `translateX(-${100 - percentage}%)` }}
-                className={cx("size-full rounded-md bg-fg-brand-primary transition duration-75 ease-linear", progressClassName)}
+                className={cx("size-full rounded-md bg-emerald-500 transition duration-75 ease-linear", progressClassName)}
             />
         </div>
     );
@@ -82,14 +82,14 @@ export const ProgressBar = ({ value, min = 0, max = 100, valueFormatter, labelPo
             return (
                 <div className="flex items-center gap-3">
                     {baseProgressBar}
-                    <span className="shrink-0 text-sm font-medium text-secondary tabular-nums">{formattedValue}</span>
+                    <span className="shrink-0 text-sm font-medium text-zinc-300 tabular-nums">{formattedValue}</span>
                 </div>
             );
         case "bottom":
             return (
                 <div className="flex flex-col items-end gap-2">
                     {baseProgressBar}
-                    <span className="text-sm font-medium text-secondary tabular-nums">{formattedValue}</span>
+                    <span className="text-sm font-medium text-zinc-300 tabular-nums">{formattedValue}</span>
                 </div>
             );
         case "top-floating":
@@ -98,9 +98,9 @@ export const ProgressBar = ({ value, min = 0, max = 100, valueFormatter, labelPo
                     {baseProgressBar}
                     <div
                         style={{ left: `${percentage}%` }}
-                        className="absolute -top-2 -translate-x-1/2 -translate-y-full rounded-lg bg-primary_alt px-3 py-2 shadow-lg ring-1 ring-secondary_alt"
+                        className="absolute -top-2 -translate-x-1/2 -translate-y-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 shadow-lg"
                     >
-                        <div className="text-xs font-semibold text-secondary tabular-nums">{formattedValue}</div>
+                        <div className="text-xs font-semibold text-zinc-300 tabular-nums">{formattedValue}</div>
                     </div>
                 </div>
             );
@@ -110,9 +110,9 @@ export const ProgressBar = ({ value, min = 0, max = 100, valueFormatter, labelPo
                     {baseProgressBar}
                     <div
                         style={{ left: `${percentage}%` }}
-                        className="absolute -bottom-2 -translate-x-1/2 translate-y-full rounded-lg bg-primary_alt px-3 py-2 shadow-lg ring-1 ring-secondary_alt"
+                        className="absolute -bottom-2 -translate-x-1/2 translate-y-full rounded-lg bg-zinc-900 border border-zinc-700 px-3 py-2 shadow-lg"
                     >
-                        <div className="text-xs font-semibold text-secondary">{formattedValue}</div>
+                        <div className="text-xs font-semibold text-zinc-300">{formattedValue}</div>
                     </div>
                 </div>
             );

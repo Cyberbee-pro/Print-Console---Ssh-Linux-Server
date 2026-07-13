@@ -27,16 +27,15 @@ The project is structured as a decoupled monorepo using Bun Workspaces, separati
 
 ```text
 .
-├── packages/
-│   ├── web-console/         # Next.js Frontend UI Application
+├── Src/
+│   ├── print-console-front/ # Next.js Frontend UI Application
 │   │   ├── src/
 │   │   └── package.json
 │   └── print-backend/       # Bun Runtime Network Gateway API
-│       ├── src/
+│       ├── controllers/
 │       └── package.json
 ├── package.json             # Root Workspace Orchestrator
 └── README.md
-
 ```
 
 ---
@@ -54,43 +53,51 @@ This project uses a modular design. To deploy an instance, fork the repository a
 
 ### Backend Configuration
 
-Create a `.env` file inside `packages/print-backend/`:
+Create a `.env.local` file inside `Src/print-backend/`:
 
 ```env
 # Network Configuration
-PORT=your_frontend_port
-HOST=your_frontend_host
+PORT=5000
+FRONTEND_ORIGIN="http://localhost:3000"
 
 # Filesystem Targets
-DROP_ZONE_PATH="path_to_server_storage"
-STORAGE_POOL_PATH="/path_to_/PrintConsoleStorage"
+DROP_ZONE_PATH="/srv/PrintConsoleStorage/printConsole"
+STORAGE_POOL="/srv/PrintConsoleStorage"
+
+# Storage Settings (Set to true to store files locally, defaults to false)
+useStorage=true
+
+# Self-Hosted Local Isolation Toggle
+SELF_HOST=true
+MOCK_PRINT=true
 ```
-#recomended architecture
+
+Recommended Storage Architecture:
 ```
 PrintConsoleStorage
-|-/received
-|-/queue 
-|-/printed
+├── received    # Finished printed files archive
+├── queue       # Active spooler queue
+└── printed     # Printed history archive
 ```
 
-```
-# Remote Gateway Tracking (Optional)
-SSH_ENABLED=false
+For Remote SSH Gateway Ingress, configure:
+```env
+# Remote Gateway Tracking
+SSH_ENABLED=true/false
 SSH_HOST="your_ssh_host_address"
-SSH_PORT= your_ssh_port : eg - 3844
+SSH_PORT=22
 SSH_USER="your_print_console_user"
-SSH_KEY_PATH="/path/to/identity/key"
-
+SSH_KEY_PATH="/path/to/identity/key"  # Can be a path or the raw PEM key string
 ```
+*(Note: Legacy environment variable names like `serverIp`, `serverPort`, `sshUsr`, and `sshKey` are also fully supported fallback options).*
 
 ### Frontend Configuration
 
-Create a `.env.local` file inside `packages/web-console/`:
+Create a `.env.local` file inside `Src/print-console-front/`:
 
 ```env
 # API Gateway Routing
-NEXT_PUBLIC_API_URL="http://localhost:5000"
-
+NEXT_PUBLIC_BACKEND_URL="http://localhost:5000"
 ```
 
 ---

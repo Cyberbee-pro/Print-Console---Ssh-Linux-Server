@@ -3,20 +3,22 @@
 export interface PrintOptions {
   printMode: "draft" | "standard" | "high";
   colorMode: "color" | "mono";
-  duplexMode: "simplex" | "duplex";
+  duplexMode: "simplex" | "duplex" | "manual";
   pageMode: "all" | "custom";
   customPages: string;
 }
 
 export interface ServerReceipt {
-  success: boolean;
+  status: "success" | "holding";
   filename: string;
-  message: string;
+  step?: "flip_pages";
+  originalBody?: PrintOptions;
+  message?: string;
 }
 
 /**
  * Packs binary components and execution variables into a Multipart FormData package 
- * and handles dispatch across the localhost loopback.
+ * and handles dispatch across the network gateway.
  */
 export const sendPrintJobToServer = async (
   file: File,
@@ -35,10 +37,11 @@ export const sendPrintJobToServer = async (
   formData.append("customPages", settings.customPages);
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-  // Fire async payload over the local network loop
+  
+  // Route to the root backend endpoint directly to avoid path mismatches
   const response = await fetch(`${backendUrl}/print`, {
     method: "POST",
-    body: formData, // Fetch naturally injects the boundary multipart headers automatically
+    body: formData,
   });
 
   if (!response.ok) {
@@ -47,4 +50,20 @@ export const sendPrintJobToServer = async (
   }
 
   return response.json();
+};
+
+export interface PipelineState {
+  received: { count: number; files: string[] };
+  queue: { count: number; files: string[] };
+  printed: { count: number; files: string[] };
+}
+
+export const fetchPipelineStatus = async (): Promise<PipelineState> => {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const response = await fetch(`${backendUrl}/status`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch pipeline status: ${response.statusText}`);
+  }
+  const result = await response.json();
+  return result.data;
 };

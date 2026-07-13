@@ -7,7 +7,7 @@ import { FileUpload } from "@/components/application/file-upload/file-upload-bas
 import { useState, useRef, useEffect } from 'react';
 import { RippleButton } from '@/components/ui/ripple-button';
 import { Dropdown } from "@/components/base/dropdown/dropdown";
-import { sendPrintJobToServer, fetchPipelineStatus, type PipelineState } from '@/utils/api';
+import { sendPrintJobToServer, fetchPipelineStatus, type PipelineState, getBackendUrl } from '@/utils/api';
 import { Button as AriaButton } from 'react-aria-components';
 
 // 1. Structural Contracts for Type Safety
@@ -196,7 +196,7 @@ const Content = () => {
           );
 
           // Fire continuation array variables directly to the root backend continuation endpoint
-          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+          const backendUrl = getBackendUrl();
           const continueResponse = await fetch(`${backendUrl}/print/continue`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

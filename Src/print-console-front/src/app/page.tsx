@@ -194,6 +194,7 @@ const Content = () => {
           setUploadedFiles((prev) =>
             prev.map((item) => (item.id === job.id ? { ...item, progress: 75 } : item))
           );
+          
 
           // Fire continuation array variables directly to the root backend continuation endpoint
           const backendUrl = getBackendUrl();
@@ -231,6 +232,7 @@ const Content = () => {
 
     setIsSubmitting(false);
     loadPipelineStatus();
+    
   };
 
   return (

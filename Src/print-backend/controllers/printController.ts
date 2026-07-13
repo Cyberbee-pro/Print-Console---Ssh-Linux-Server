@@ -7,7 +7,7 @@ import { Client } from "ssh2";
 
 const isSelfHost = process.env.SELF_HOST === "true" || process.env.SSH_ENABLED === "false";
 const STORAGE_POOL = process.env.STORAGE_POOL || process.env.STORAGE_POOL_PATH || "/srv/PrintConsoleStorage";
-const DROP_ZONE = process.env.DROP_ZONE_PATH || "/srv/PrintConsoleStorage/printConsole";
+const DROP_ZONE = process.env.DROP_ZONE_PATH || path.join(STORAGE_POOL, "queue");
 
 /**
  * Lazy-loads SSH configurations only when remote tunneling mode is active.

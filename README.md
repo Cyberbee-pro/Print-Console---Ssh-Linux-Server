@@ -61,7 +61,7 @@ PORT=5000
 FRONTEND_ORIGIN="http://localhost:3000"
 
 # Filesystem Targets
-DROP_ZONE_PATH="/srv/PrintConsoleStorage/printConsole"
+DROP_ZONE_PATH="/srv/PrintConsoleStorage/queue"
 STORAGE_POOL="/srv/PrintConsoleStorage"
 
 # Storage Settings (Set to true to store files locally, defaults to false)

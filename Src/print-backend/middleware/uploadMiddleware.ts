@@ -4,7 +4,7 @@ import fs from "node:fs";
 
 const useStorage = process.env.useStorage === "true";
 const STORAGE_POOL = process.env.STORAGE_POOL || process.env.STORAGE_POOL_PATH || "/srv/PrintConsoleStorage";
-const DROP_ZONE = process.env.DROP_ZONE_PATH || "/srv/PrintConsoleStorage/printConsole";
+const DROP_ZONE = process.env.DROP_ZONE_PATH || path.join(STORAGE_POOL, "queue");
 
 // Define all necessary folders needed by the status and archival routines
 const REQUIRED_PIPELINE_SUBDIRS = ["received", "queue", "printed"];

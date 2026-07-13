@@ -45,7 +45,7 @@ The backend supports two main operational architectures: **Self-Hosted (Local)**
   - `/received`: Holds the final archive of received document files.
   - `/queue`: Holds actively spooled document queue streams.
   - `/printed`: Stores archives of successfully printed files.
-* **`DROP_ZONE_PATH`** (Default: `"/srv/PrintConsoleStorage/printConsole"`): The staging directory where raw document uploads are temporarily written to disk prior to print execution commands.
+* **`DROP_ZONE_PATH`** (Default: `"/srv/PrintConsoleStorage/queue"`): The staging directory where raw document uploads are temporarily written to disk prior to print execution commands.
 
 ### 5. Remote SSH Gateway Configurations
 *(Only loaded/required when **Self-Hosted Mode is NOT active**)*
